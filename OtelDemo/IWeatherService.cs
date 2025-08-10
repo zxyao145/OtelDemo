@@ -24,6 +24,7 @@ class WeatherService : IWeatherService
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
+    // Prometheus: GetWeatherForecast_count_total
     private static Counter<int> successCounter = OtelUtil.Meter.CreateCounter<int>("GetWeatherForecast.count", description: "Number of successful responses");
 
     private readonly ILogger<WeatherService> _logger;

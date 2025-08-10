@@ -1,3 +1,4 @@
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -15,7 +16,8 @@ public static class ServiceExtension
         var serviceName = OtelUtil.ServiceName;
         var serviceVersion = OtelUtil.ServiceVersion;
 
-
+        // Microsoft.Extensions.Logging 使用下面 builder.Logging.AddOpenTelemetry
+        // serilog 需要使用 Serilog.Sinks.OpenTelemetry
         builder.Logging.AddOpenTelemetry(options =>
         {
             options
@@ -25,7 +27,9 @@ public static class ServiceExtension
 
             options.AddOtlpExporter(opt =>
             {
-                opt.Endpoint = new Uri("http://localhost:4317"); // OTLP gRPC 接口
+                opt.Endpoint = new Uri("http://localhost:4318/v1/logs");  // OTLP 接口
+                // opt.Endpoint = new Uri("http://loki:3100/otlp"); // OTLP loki 接口
+                opt.Protocol = OtlpExportProtocol.HttpProtobuf;
             });
         });
 
@@ -42,7 +46,10 @@ public static class ServiceExtension
 
                 tracing.AddOtlpExporter(opt =>
                 {
-                    opt.Endpoint = new Uri("http://localhost:4317"); // OTLP gRPC 接口
+                    //opt.Endpoint = new Uri("http://localhost:4318/v1/traces");  // OTLP 接口
+                    opt.Endpoint = new Uri("http://localhost:4317");  // OTLP 接口
+                    opt.Protocol = OtlpExportProtocol.Grpc;
+
                 });
             })
             .WithMetrics(metrics =>
@@ -54,8 +61,14 @@ public static class ServiceExtension
 
                 metrics.AddOtlpExporter(opt =>
                 {
-                    opt.Endpoint = new Uri("http://localhost:4317");
+                    opt.Endpoint = new Uri("http://localhost:4318/v1/metrics");  // OTLP prometheus 接口
+                    opt.Protocol = OtlpExportProtocol.HttpProtobuf;
                 });
+
+                // OpenTelemetry.Exporter.Prometheus.AspNetCore
+                //metrics.AddPrometheusExporter(opt =>
+                //{
+                //});
             });
 
 

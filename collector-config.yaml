@@ -1,0 +1,73 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+
+processors:
+  batch:  # 添加批处理提高性能
+  tail_sampling:
+    decision_wait: 20s  # 等待收齐整个 trace 的时间
+    num_traces: 50000   # 缓存中可保存的 trace 数量
+    policies:
+      # 1. 错误 trace 全采样
+      - name: error-traces
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+
+      # 2. 带 Otel.Debug 标签的 trace 全采样
+      - name: debug-traces
+        type: string_attribute
+        string_attribute: 
+          key: "otel.debug"
+          values: ["true"]
+
+      # 3. 其余正常 trace 采样 50%
+      - name: normal-traces
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 50
+
+
+exporters:
+  debug:
+
+  otlp/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+
+  prometheus:
+    endpoint: "0.0.0.0:9464"  # Collector 自带 Prometheus Exporter
+
+  otlphttp/logs:
+    endpoint: http://loki:3100/otlp
+    tls:
+      insecure: true
+
+
+service:
+  extensions: [zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      # processors: [tail_sampling]
+      # exporters: [debug, otlp/jaeger]
+      exporters: [otlp/jaeger]
+
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
+
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/logs]
+
+extensions:
+  zpages:

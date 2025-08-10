@@ -2,12 +2,18 @@
 using OtelDemo;
 using OtelDemo.Otel;
 using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
+     //.WriteTo.OpenTelemetry(options =>
+     //{
+     //    //options.Endpoint = "http://localhost:4317";  // OTLP 接口
+     //    //options.Protocol = OtlpProtocol.Grpc;
+     //})
     .CreateLogger();
 builder.Services.AddSerilog();
 #endregion
@@ -32,6 +38,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Enable OpenTelemetry Prometheus scraping endpoint
+// app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
+app.UseSerilogRequestLogging();
 
 app.MapGet("/weatherforecast", async (IWeatherService weatherService) =>
 {

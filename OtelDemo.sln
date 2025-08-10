@@ -5,6 +5,14 @@ VisualStudioVersion = 17.14.36025.13 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtelDemo", "OtelDemo\OtelDemo.csproj", "{A193B250-6870-4693-AC41-04427BC3157F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}"
+	ProjectSection(SolutionItems) = preProject
+		collector-config.yaml = collector-config.yaml
+		docker-compose.yaml = docker-compose.yaml
+		loki-config.yaml = loki-config.yaml
+		prometheus.yaml = prometheus.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
