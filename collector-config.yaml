@@ -19,18 +19,18 @@ processors:
         status_code:
           status_codes: [ERROR]
 
-      # 2. 带 Otel.Debug 标签的 trace 全采样
+      # 2. 带 otel.debug=true 标签的 trace 全采样
       - name: debug-traces
         type: string_attribute
         string_attribute: 
           key: "otel.debug"
           values: ["true"]
 
-      # 3. 其余正常 trace 采样 50%
+      # 3. 其余正常 trace 采样 20%
       - name: normal-traces
         type: probabilistic
         probabilistic:
-          sampling_percentage: 50
+          sampling_percentage: 20
 
 
 exporters:
@@ -50,8 +50,21 @@ exporters:
       insecure: true
 
 
+extensions:
+  zpages:
+  http_forwarder:
+    ingress:
+      endpoint: 0.0.0.0:7070
+    egress:
+      endpoint: http://0.0.0.0:9464/
+      headers:
+        otel_http_forwarder: dev
+        Accept: application/openmetrics-text; version=1.0.0; charset=utf-8
+      timeout: 60s
+
+      
 service:
-  extensions: [zpages]
+  extensions: [zpages, http_forwarder]
   pipelines:
     traces:
       receivers: [otlp]
@@ -68,6 +81,3 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [otlphttp/logs]
-
-extensions:
-  zpages:
