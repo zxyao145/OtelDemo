@@ -27,8 +27,8 @@ public static class ServiceExtension
 
             options.AddOtlpExporter(opt =>
             {
-                opt.Endpoint = new Uri("http://localhost:4318/v1/logs");  // OTLP 接口
                 // opt.Endpoint = new Uri("http://loki:3100/otlp"); // OTLP loki 接口
+                opt.Endpoint = new Uri("http://localhost:4318/v1/logs");  // OTLP HTTP 接口
                 opt.Protocol = OtlpExportProtocol.HttpProtobuf;
             });
         });
@@ -46,22 +46,24 @@ public static class ServiceExtension
 
                 tracing.AddOtlpExporter(opt =>
                 {
-                    //opt.Endpoint = new Uri("http://localhost:4318/v1/traces");  // OTLP 接口
-                    opt.Endpoint = new Uri("http://localhost:4317");  // OTLP 接口
-                    opt.Protocol = OtlpExportProtocol.Grpc;
-
+                    //opt.Endpoint = new Uri("http://localhost:4317");  // Grpc 接口
+                    opt.Endpoint = new Uri("http://localhost:4318/v1/traces");  // OTLP HTTP 接口
+                    opt.Protocol = OtlpExportProtocol.HttpProtobuf;
                 });
             })
             .WithMetrics(metrics =>
             {
                 metrics
                     .AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation();
                 metrics.AddMeter(OtelUtil.ServiceName);
 
+                metrics.SetExemplarFilter(ExemplarFilterType.TraceBased);
                 metrics.AddOtlpExporter(opt =>
                 {
-                    opt.Endpoint = new Uri("http://localhost:4318/v1/metrics");  // OTLP prometheus 接口
+                    // opt.Endpoint = new Uri("http://localhost:4318/v1/metrics");  // OTLP HTTP 接口
+                    opt.Endpoint = new Uri("http://localhost:9090/api/v1/otlp/v1/metrics");  // OTLP prometheus 接口
                     opt.Protocol = OtlpExportProtocol.HttpProtobuf;
                 });
 
