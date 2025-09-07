@@ -49,11 +49,3 @@ scrape_configs:
       - targets: ['grafana:3000']
     scrape_interval: 30s
     metrics_path: /metrics
-
-
-  # OpenTelemetry Collector 2 指标
-  - job_name: 'otel-collector-metrics-2'
-    static_configs:
-      - targets: ['10.89.3.1:9464']
-    scrape_interval: 15s
-    metrics_path: /metrics

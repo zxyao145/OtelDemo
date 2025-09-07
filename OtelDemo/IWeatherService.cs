@@ -24,9 +24,11 @@ class WeatherService : IWeatherService
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
-    // Prometheus: GetWeatherForecast_count_total
-    private static Counter<int> successCounter = OtelUtil.Meter.CreateCounter<int>("GetWeatherForecast.count", description: "Number of successful responses");
-
+    // Prometheus: get_weather_forecast_count_total
+    private static Counter<int> successCounter = OtelUtil.Meter.CreateCounter<int>("get_weather_forecast_count", description: "Number of successful responses");
+    // Prometheus: get_weather_forecast_histogram_milliseconds_bucket, get_weather_forecast_histogram_milliseconds_count, get_weather_forecast_histogram_milliseconds_sum
+    private static Histogram<double> histogram = OtelUtil.Meter.CreateHistogram<double>("get_weather_forecast_histogram", unit: "ms", description: "Example histogram");
+    
     private readonly ILogger<WeatherService> _logger;
 
     public WeatherService(ILogger<WeatherService> logger)
@@ -64,6 +66,8 @@ class WeatherService : IWeatherService
             activity?.SetTag("WeatherService.Tag.Random.Value", value);
             activity?.AddBaggage("WeatherService.Baggage.Random.Value", value.ToString());
             _logger.LogInformation("Random.Value is:{Random}", value);
+
+            histogram.Record(value * 100);
 
             if (value > 8)
             {
